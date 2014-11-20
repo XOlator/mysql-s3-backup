@@ -63,16 +63,13 @@ begin
       s3_path = File.join(S3_PREFIX, time_now.strftime('%Y'), time_now.strftime('%m'), time_now.strftime('%d'), gzip_filename )
 
       # Run mysqldump
-      db_info[:sql_password] = '-p' + db_info[:password] unless db_info[:password].blank?
-
+      db_info['sql_password'] = '-p' + db_info['password'] unless db_info['password'].blank?
       mysqldump = Cocaine::CommandLine.new('mysqldump', '-u :username :sql_password -h :host -P :port :database > :sql_file')
       mysqldump.send((DEBUG ? :command : :run), DEFAULT_MYSQL_OPTIONS.merge(db_info).merge({sql_file: sql_file}))
-
 
       # Gzip SQL file
       gzipcmd = Cocaine::CommandLine.new('gzip', '-c :sql_file > :gzip_file')
       gzipcmd.send((DEBUG ? :command : :run), {sql_file: sql_file, gzip_file: gzip_file})
-
 
       # Upload to S3
       s3_file = @s3.objects[ s3_path ]
